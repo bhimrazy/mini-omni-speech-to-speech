@@ -3,7 +3,7 @@ import base64
 import tempfile
 
 import litserve as ls
-from fastapi import StreamingResponse
+from fastapi.responses import StreamingResponse
 
 from inference import OmniInference
 
