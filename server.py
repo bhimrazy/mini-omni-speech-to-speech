@@ -1,11 +1,14 @@
 # server.py
 import base64
 import tempfile
+import torch
 
 import litserve as ls
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 
-from inference import OmniInference
+from mini_omni.inference import OmniInference
+
+torch.set_float32_matmul_precision("medium")
 
 
 class MiniOmni(ls.LitAPI):
@@ -19,7 +22,7 @@ class MiniOmni(ls.LitAPI):
         data_buf = base64.b64decode(data_buf)
         stream_stride = request.get("stream_stride", 4)
         max_tokens = request.get("max_tokens", 2048)
-
+        print(f"stream_stride: {stream_stride}, max_tokens: {max_tokens}")
         return data_buf, stream_stride, max_tokens
 
     def predict(self, inputs):
@@ -35,7 +38,7 @@ class MiniOmni(ls.LitAPI):
         yield from audio_generator
 
     def encode_response(self, output):
-        return StreamingResponse(output, media_type="audio/wav")
+        yield from output
 
 
 # (STEP 2) - START THE SERVER

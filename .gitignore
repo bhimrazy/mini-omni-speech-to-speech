@@ -166,3 +166,5 @@ cython_debug/
 .wget-*
 .vscode
 *.iml
+checkpoint
+output.wav
