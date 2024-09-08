@@ -1,4 +1,6 @@
+keyboard==0.13.5
 librosa
 numpy==2.0.2
+onnxruntime==1.19.2
 pyaudio==0.2.14
-requests==2.32.3
+requests==2.32.3du 
