@@ -8,7 +8,7 @@ import pyaudio
 import requests
 
 # Server URL
-API_URL = "http://localhost:8000/chat"
+API_URL = "https://8000-01j78y8pf1nes8jqpy1w44qsgw.cloudspaces.litng.ai/chat"
 
 # recording parameters
 IN_FORMAT = pyaudio.paInt16
