@@ -1,17 +1,27 @@
 # server.py
+import base64
+import tempfile
+
 import litserve as ls
 
+from mini_omni.inference import OmniInference
 
-# (STEP 1) - DEFINE THE API (compound AI system)
+
 class MiniOmni(ls.LitAPI):
     def setup(self, device):
-        # setup is called once at startup. Build a compound AI system (1+ models), connect DBs, load data, etc...
-        self.model1 = lambda x: x**2
-        self.model2 = lambda x: x**3
+        self.client = OmniInference(ckpt_dir="./checkpoint", device=device)
+        self.client.warm_up()
 
     def decode_request(self, request):
         # Convert the request payload to model input.
-        return request["input"]
+        data_buf = request["audio"].encode("utf-8")
+        data_buf = base64.b64decode(data_buf)
+        stream_stride = request.get("stream_stride", 4)
+        max_tokens = request.get("max_tokens", 2048)
+
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            f.write(data_buf)
+            return f.name, stream_stride, max_tokens
 
     def predict(self, x):
         # Easily build compound systems. Run inference and return the output.
@@ -27,6 +37,5 @@ class MiniOmni(ls.LitAPI):
 
 # (STEP 2) - START THE SERVER
 if __name__ == "__main__":
-    # scale with advanced features (batching, GPUs, etc...)
-    server = ls.LitServer(MiniOmni(), accelerator="auto", max_batch_size=1)
+    server = ls.LitServer(MiniOmni(), accelerator="auto", api_path="/chat")
     server.run(port=8000)
