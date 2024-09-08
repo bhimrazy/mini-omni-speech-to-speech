@@ -3,8 +3,9 @@ import base64
 import tempfile
 
 import litserve as ls
+from fastapi import StreamingResponse
 
-from mini_omni.inference import OmniInference
+from inference import OmniInference
 
 
 class MiniOmni(ls.LitAPI):
@@ -19,23 +20,26 @@ class MiniOmni(ls.LitAPI):
         stream_stride = request.get("stream_stride", 4)
         max_tokens = request.get("max_tokens", 2048)
 
+        return data_buf, stream_stride, max_tokens
+
+    def predict(self, inputs):
+        # Run inference and return the output.
+        data_buf, stream_stride, max_tokens = inputs
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
             f.write(data_buf)
-            return f.name, stream_stride, max_tokens
+            audio_file = f.name
 
-    def predict(self, x):
-        # Easily build compound systems. Run inference and return the output.
-        squared = self.model1(x)
-        cubed = self.model2(x)
-        output = squared + cubed
-        return {"output": output}
+            audio_generator = self.client.run_AT_batch_stream(
+                audio_file, stream_stride, max_tokens
+            )
+        yield from audio_generator
 
     def encode_response(self, output):
-        # Convert the model output to a response payload.
-        return {"output": output}
+        return StreamingResponse(output, media_type="audio/wav")
 
 
 # (STEP 2) - START THE SERVER
 if __name__ == "__main__":
-    server = ls.LitServer(MiniOmni(), accelerator="auto", api_path="/chat")
+    api = MiniOmni()
+    server = ls.LitServer(api, accelerator="auto", api_path="/chat", stream=True)
     server.run(port=8000)
