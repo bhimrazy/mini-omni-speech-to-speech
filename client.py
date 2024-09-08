@@ -35,10 +35,9 @@ def record_audio():
     )
 
     frames = []
-    recording = True
 
     try:
-        while recording:
+        while True:
             audio_bytes = stream.read(IN_CHUNK)
             frames.append(audio_bytes)
 
