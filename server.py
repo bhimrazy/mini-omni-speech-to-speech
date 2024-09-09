@@ -10,7 +10,7 @@ from mini_omni.inference import OmniInference
 torch.set_float32_matmul_precision("medium")
 
 
-class MiniOmni(ls.LitAPI):
+class MiniOmniSpeechToSpeechAPI(ls.LitAPI):
     def setup(self, device):
         self.client = OmniInference(ckpt_dir="./checkpoint", device=device)
         self.client.warm_up()
@@ -40,8 +40,7 @@ class MiniOmni(ls.LitAPI):
         yield from output
 
 
-# (STEP 2) - START THE SERVER
 if __name__ == "__main__":
-    api = MiniOmni()
+    api = MiniOmniSpeechToSpeechAPI()
     server = ls.LitServer(api, accelerator="auto", api_path="/chat", stream=True)
     server.run(port=8000)
