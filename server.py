@@ -1,10 +1,9 @@
 # server.py
 import base64
 import tempfile
-import torch
 
 import litserve as ls
-from fastapi.responses import StreamingResponse, Response
+import torch
 
 from mini_omni.inference import OmniInference
 
